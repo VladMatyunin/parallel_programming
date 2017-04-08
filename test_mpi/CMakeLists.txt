@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.6)
+project(test_mpi)
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_COMPILER "/usr/bin/mpicc")
+set(SOURCE_FILES main.c)
+add_executable(test_mpi ${SOURCE_FILES})
+include_directories(/usr/include/mpi/)
