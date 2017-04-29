@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <malloc.h>
 #include <math.h>
+#include <omp.h>
+
 float *readMatrix(char *pathToFile, int *sizeMatrix);
 
 void sort(float *array, int direction, int size, int number, int startPosition);
@@ -13,15 +15,17 @@ int main(int *argc, char **argv) {
     for (int i = 1; i <= log2(*size); ++i) {
         sort(matrix, 1, *size, (int) pow(2, i), 0);
     }
-    printMatrix(matrix,*size);
+    printMatrix(matrix, *size);
     return 0;
 }
-void printMatrix(float *matrix, int size){
+
+void printMatrix(float *matrix, int size) {
     for (int i = 0; i < size; ++i) {
-        printf("%f ",matrix[i]);
+        printf("%f ", matrix[i]);
     }
     printf("\n");
 }
+
 float *readMatrix(char *pathToFile, int *sizeMatrix) {
     FILE *file = fopen(pathToFile, "r");
     int size;
@@ -37,29 +41,45 @@ float *readMatrix(char *pathToFile, int *sizeMatrix) {
     *sizeMatrix = size;
     return matrix;
 }
-void sort(float *array, int direction, int size, int number, int startPosition){
-    if (startPosition<size) {
-//        for (int j = number/2; j >= 1; j/=2)
-        for (int i = startPosition; i < startPosition+number/2; ++i) {
-            //sort
-            if (direction>0){
-                if (array[i]>array[i+number/2]){
-                    float p = array[i];
-                    array[i] = array[i+number/2];
-                    array[i+number/2] = p;
-                }
-            } else{
-                if (array[i]<array[i+number/2]){
-                    float p = array[i];
-                    array[i] = array[i+number/2];
-                    array[i+number/2] = p;
+
+void sort(float *array, int direction, int size, int number, int startPosition) {
+//#pragma omp parallel
+
+    if (startPosition < size) {
+
+#pragma omp parallel
+        {
+#pragma omp for
+            for (int i = startPosition; i < startPosition + number / 2; ++i) {
+                //sort
+                if (direction > 0) {
+                    if (array[i] > array[i + number / 2]) {
+                        float p = array[i];
+                        array[i] = array[i + number / 2];
+                        array[i + number / 2] = p;
+                    }
+                } else {
+                    if (array[i] < array[i + number / 2]) {
+                        float p = array[i];
+                        array[i] = array[i + number / 2];
+                        array[i + number / 2] = p;
+                    }
                 }
             }
         }
-        if (number>2){
-            sort(array,direction,size,number/2,startPosition);
-            sort(array,direction,size,number/2,startPosition+number/2);
-        }
-            sort(array,-direction,size,number,startPosition+number);
+
+            if (number > 2) {
+
+                sort(array, direction, size, number / 2, startPosition);
+
+                sort(array, direction, size, number / 2, startPosition + number / 2);
+
+                }
+
+                sort(array, -direction, size, number, startPosition + number);
     }
+
 }
+
+
+
